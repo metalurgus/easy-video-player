@@ -23,6 +23,8 @@ interface IUserMethods {
 
     void setProgressCallback(@NonNull EasyVideoProgressCallback callback);
 
+    void setControlsVisibilityCallback(@NonNull EasyVideoControlsVisibilityCallback callback);
+
     void setLeftAction(@EasyVideoPlayer.LeftAction int action);
 
     void setRightAction(@EasyVideoPlayer.RightAction int action);

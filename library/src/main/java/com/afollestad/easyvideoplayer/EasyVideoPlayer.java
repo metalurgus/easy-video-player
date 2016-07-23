@@ -86,6 +86,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
     private TextureView mTextureView;
     private Surface mSurface;
+    private ScaleType mScaleType;
 
     private View mControlsFrame;
     private View mProgressFrame;
@@ -113,6 +114,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private Uri mSource;
     private EasyVideoCallback mCallback;
     private EasyVideoProgressCallback mProgressCallback;
+    private EasyVideoControlsVisibilityCallback mControlsVisibilityCallback;
     @LeftAction
     private int mLeftAction = LEFT_ACTION_RESTART;
     @RightAction
@@ -229,6 +231,11 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void setProgressCallback(@NonNull EasyVideoProgressCallback callback) {
         mProgressCallback = callback;
+    }
+
+    @Override
+    public void setControlsVisibilityCallback(@NonNull EasyVideoControlsVisibilityCallback callback) {
+        mControlsVisibilityCallback = callback;
     }
 
     @Override
@@ -354,6 +361,10 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mInitialPosition = pos;
     }
 
+    public View getControlsView() {
+        return mControlsFrame;
+    }
+
     private void prepare() {
         if (!mSurfaceAvailable || mSource == null || mPlayer == null || mIsPrepared)
             return;
@@ -404,8 +415,13 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (mAutoFullscreen)
+                        if (mAutoFullscreen) {
                             setFullscreen(false);
+                        }
+                        if (mControlsVisibilityCallback != null) {
+                            mControlsVisibilityCallback.onControlsShown();
+                        }
+
                     }
                 }).start();
     }
@@ -426,6 +442,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
                         if (mControlsFrame != null)
                             mControlsFrame.setVisibility(View.INVISIBLE);
+                        if (mControlsVisibilityCallback != null) {
+                            mControlsVisibilityCallback.onControlsHidden();
+                        }
                     }
                 }).start();
     }
@@ -954,6 +973,41 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
                 mClickFrame.setSystemUiVisibility(flags);
             }
+        }
+    }
+
+    public ScaleType getScaleType() {
+        return mScaleType;
+    }
+
+    public void setScaleType(ScaleType scaleType) {
+        mScaleType = scaleType;
+        applyScaleType(scaleType);
+    }
+
+    private void applyScaleType(ScaleType scaleType) {
+        int viewHeight = mTextureView.getHeight();
+        int viewWidth = mTextureView.getWidth();
+
+        int videoHeight = mPlayer.getVideoHeight();
+        int videoWidth = mPlayer.getVideoWidth();
+
+        switch (scaleType) {
+            case CENTER_INSIDE:
+                if (viewHeight < videoHeight || viewWidth < videoWidth) {
+                    adjustAspectRatio(viewWidth, viewHeight, videoWidth, videoHeight);
+                } else {
+                    mTextureView.setTransform(new Matrix());
+                }
+                break;
+            case FIT_CENTER:
+                adjustAspectRatio(viewWidth, viewHeight, videoWidth, videoHeight);
+                break;
+            case FIT_XY:
+
+                break;
+            case CENTER_CROP:
+                break;
         }
     }
 }
