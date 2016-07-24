@@ -95,24 +95,21 @@
         tools:ignore="UnusedAttribute"
         tools:text="-09:12" />
 
-    <TextView
-        android:id="@+id/btnSubmit"
-        style="?borderlessButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageButton
+        android:id="@+id/btnNext"
+        android:layout_width="@dimen/evp_button_size"
+        android:layout_height="@dimen/evp_button_size"
+        android:layout_below="@+id/position"
+        android:layout_marginLeft="@dimen/evp_content_inset_iconbuttons"
+        android:layout_marginStart="@dimen/evp_content_inset_iconbuttons"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/position"
         android:background="?selectableItemBackground"
-        android:fontFamily="sans-serif-medium"
-        android:gravity="center"
-        android:minHeight="@dimen/evp_button_size"
-        android:paddingLeft="@dimen/evp_content_inset"
-        android:paddingRight="@dimen/evp_content_inset"
-        android:text="@string/evp_submit"
-        android:textColor="#fff"
-        android:textSize="@dimen/evp_text_size_medium"
-        tools:ignore="ContentDescription,UnusedAttribute" />
+        android:paddingLeft="@dimen/evp_button_size"
+        android:paddingRight="@dimen/evp_button_size"
+        android:src="@drawable/evp_action_next"
+        tools:ignore="ContentDescription" />
+
 
     <TextView
         android:id="@+id/labelCustom"

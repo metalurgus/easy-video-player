@@ -12,12 +12,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 
+import java.util.ArrayList;
+
 /**
  * @author Aidan Follestad (afollestad)
  */
 interface IUserMethods {
 
+    void setPlayingIndex(int index);
+
     void setSource(@NonNull Uri source);
+
+    void setSource(@NonNull ArrayList<String> source);
 
     void setCallback(@NonNull EasyVideoCallback callback);
 
@@ -41,10 +47,6 @@ interface IUserMethods {
 
     void setRetryTextRes(@StringRes int res);
 
-    void setSubmitText(@Nullable CharSequence text);
-
-    void setSubmitTextRes(@StringRes int res);
-
     void setRestartDrawable(@NonNull Drawable drawable);
 
     void setRestartDrawableRes(@DrawableRes int res);
@@ -52,6 +54,10 @@ interface IUserMethods {
     void setPlayDrawable(@NonNull Drawable drawable);
 
     void setPlayDrawableRes(@DrawableRes int res);
+
+    void setNextDrawable(@NonNull Drawable drawable);
+
+    void setNextDrawableRes(@DrawableRes int res);
 
     void setPauseDrawable(@NonNull Drawable drawable);
 
