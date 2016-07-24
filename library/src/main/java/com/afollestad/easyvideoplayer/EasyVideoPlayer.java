@@ -609,7 +609,8 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
         LOG("Surface texture changed: %dx%d", width, height);
-        adjustAspectRatio(width, height, mPlayer.getVideoWidth(), mPlayer.getVideoHeight());
+        setScaleType(mScaleType == null ? ScaleType.CENTER_CROP : mScaleType);
+//        adjustAspectRatio(width, height, mPlayer.getVideoWidth(), mPlayer.getVideoHeight());
     }
 
     @Override
@@ -680,7 +681,8 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
         LOG("Video size changed: %dx%d", width, height);
-        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, width, height);
+        setScaleType(mScaleType == null ? ScaleType.CENTER_CROP : mScaleType);
+//        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, width, height);
     }
 
     @Override
@@ -982,32 +984,30 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
     public void setScaleType(ScaleType scaleType) {
         mScaleType = scaleType;
-        applyScaleType(scaleType);
+        applyScaleType();
     }
 
-    private void applyScaleType(ScaleType scaleType) {
+    private void scaleVideoSize(int videoWidth, int videoHeight) {
+        if (videoWidth == 0 || videoHeight == 0) {
+            return;
+        }
+
+        Size viewSize = new Size(getWidth(), getHeight());
+        Size videoSize = new Size(videoWidth, videoHeight);
+        ScaleManager scaleManager = new ScaleManager(viewSize, videoSize);
+        Matrix matrix = scaleManager.getScaleMatrix(mScaleType);
+        if (matrix != null) {
+            mTextureView.setTransform(matrix);
+        }
+    }
+
+    private void applyScaleType() {
         int viewHeight = mTextureView.getHeight();
         int viewWidth = mTextureView.getWidth();
 
         int videoHeight = mPlayer.getVideoHeight();
         int videoWidth = mPlayer.getVideoWidth();
 
-        switch (scaleType) {
-            case CENTER_INSIDE:
-                if (viewHeight < videoHeight || viewWidth < videoWidth) {
-                    adjustAspectRatio(viewWidth, viewHeight, videoWidth, videoHeight);
-                } else {
-                    mTextureView.setTransform(new Matrix());
-                }
-                break;
-            case FIT_CENTER:
-                adjustAspectRatio(viewWidth, viewHeight, videoWidth, videoHeight);
-                break;
-            case FIT_XY:
-
-                break;
-            case CENTER_CROP:
-                break;
-        }
+        scaleVideoSize(videoWidth, videoHeight);
     }
 }
