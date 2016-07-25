@@ -683,6 +683,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             mPlayer.start();
             mPlayer.pause();
         }
+
     }
 
     @Override
@@ -859,7 +860,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 seekTo(0);
             } else {
                 nowPlayingIndex--;
-                // TODO : move to previous file
+                reset();
+                mProgressFrame.setVisibility(VISIBLE);
+                prepare();
             }
             if (!isPlaying()) start();
         } else if (view.getId() == R.id.btnRetry) {
@@ -868,7 +871,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         } else if (view.getId() == R.id.btnNext) {
             if (nowPlayingIndex < mSource.size()-1) {
                 nowPlayingIndex++;
-                // TODO : move to next file
+                reset();
+                mProgressFrame.setVisibility(VISIBLE);
+                prepare();
             }
         }
     }
