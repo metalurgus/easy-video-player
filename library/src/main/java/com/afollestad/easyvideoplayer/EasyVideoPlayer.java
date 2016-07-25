@@ -135,6 +135,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private int mThemeColor = 0;
     private boolean mAutoFullscreen = false;
     private int nowPlayingIndex = 0;
+    private boolean playBackStarted = false;
 
     // Runnable used to run code on an interval to update counters and seeker
     private final Runnable mUpdateCounters = new Runnable() {
@@ -246,7 +247,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         } else {
             mSource = new ArrayList<>();
         }
-        for (String s: source) {
+        for (String s : source) {
             mSource.add(Uri.parse(s));
         }
         if (mPlayer != null) prepare();
@@ -664,6 +665,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mIsPrepared = true;
         if (mCallback != null)
             mCallback.onPrepared(this);
+        playBackStarted = true;
         mLabelPosition.setText(Util.getDurationString(0, false));
         mLabelDuration.setText(Util.getDurationString(mediaPlayer.getDuration(), false));
         mSeeker.setProgress(0);
@@ -707,6 +709,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             mHandler.removeCallbacks(mUpdateCounters);
         mSeeker.setProgress(mSeeker.getMax());
         showControls();
+        if (playBackStarted) {
+            playNext();
+        }
     }
 
     @Override
@@ -856,26 +861,40 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 start();
             }
         } else if (view.getId() == R.id.btnRestart) {
-            if (nowPlayingIndex == 0) {
+            if (!playPrevious()) {
                 seekTo(0);
-            } else {
-                nowPlayingIndex--;
-                reset();
-                mProgressFrame.setVisibility(VISIBLE);
-                prepare();
             }
             if (!isPlaying()) start();
         } else if (view.getId() == R.id.btnRetry) {
             if (mCallback != null)
                 mCallback.onRetry(this, mSource.get(nowPlayingIndex));
         } else if (view.getId() == R.id.btnNext) {
-            if (nowPlayingIndex < mSource.size()-1) {
-                nowPlayingIndex++;
-                reset();
-                mProgressFrame.setVisibility(VISIBLE);
-                prepare();
-            }
+            playNext();
         }
+    }
+
+    private boolean playNext() {
+        if (nowPlayingIndex < mSource.size() - 1) {
+            nowPlayingIndex++;
+            reset();
+            mProgressFrame.setVisibility(VISIBLE);
+            prepare();
+            playBackStarted = false;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean playPrevious() {
+        if (nowPlayingIndex != 0) {
+            nowPlayingIndex--;
+            reset();
+            mProgressFrame.setVisibility(VISIBLE);
+            prepare();
+            playBackStarted = false;
+            return true;
+        }
+        return false;
     }
 
     @Override
