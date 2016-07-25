@@ -135,7 +135,6 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private int mThemeColor = 0;
     private boolean mAutoFullscreen = false;
     private int nowPlayingIndex = 0;
-    private boolean playBackStarted = false;
 
     // Runnable used to run code on an interval to update counters and seeker
     private final Runnable mUpdateCounters = new Runnable() {
@@ -665,7 +664,6 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mIsPrepared = true;
         if (mCallback != null)
             mCallback.onPrepared(this);
-        playBackStarted = true;
         mLabelPosition.setText(Util.getDurationString(0, false));
         mLabelDuration.setText(Util.getDurationString(mediaPlayer.getDuration(), false));
         mSeeker.setProgress(0);
@@ -709,9 +707,6 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             mHandler.removeCallbacks(mUpdateCounters);
         mSeeker.setProgress(mSeeker.getMax());
         showControls();
-        if (playBackStarted) {
-            playNext();
-        }
     }
 
     @Override
@@ -764,27 +759,31 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
         setKeepScreenOn(true);
 
-        mHandler = new Handler();
-        mPlayer = new MediaPlayer();
-        mPlayer.setOnPreparedListener(this);
-        mPlayer.setOnBufferingUpdateListener(this);
-        mPlayer.setOnCompletionListener(this);
-        mPlayer.setOnVideoSizeChangedListener(this);
-        mPlayer.setOnErrorListener(this);
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        if (!isInEditMode()) {
+            mHandler = new Handler();
+            mPlayer = new MediaPlayer();
+            mPlayer.setOnPreparedListener(this);
+            mPlayer.setOnBufferingUpdateListener(this);
+            mPlayer.setOnCompletionListener(this);
+            mPlayer.setOnVideoSizeChangedListener(this);
+            mPlayer.setOnErrorListener(this);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-        // Instantiate and add TextureView for rendering
-        final FrameLayout.LayoutParams textureLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
-        mTextureView = new TextureView(getContext());
-        addView(mTextureView, textureLp);
-        mTextureView.setSurfaceTextureListener(this);
+            // Instantiate and add TextureView for rendering
+            final FrameLayout.LayoutParams textureLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            mTextureView = new TextureView(getContext());
+            addView(mTextureView, textureLp);
+            mTextureView.setSurfaceTextureListener(this);
+        }
 
         final LayoutInflater li = LayoutInflater.from(getContext());
 
         // Inflate and add progress
-        mProgressFrame = li.inflate(R.layout.evp_include_progress, this, false);
-        addView(mProgressFrame);
+        if (!isInEditMode()) {
+            mProgressFrame = li.inflate(R.layout.evp_include_progress, this, false);
+            addView(mProgressFrame);
+        }
 
         // Instantiate and add click frame (used to toggle controls)
         mClickFrame = new FrameLayout(getContext());
@@ -861,40 +860,26 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 start();
             }
         } else if (view.getId() == R.id.btnRestart) {
-            if (!playPrevious()) {
+            if (nowPlayingIndex == 0) {
                 seekTo(0);
+            } else {
+                nowPlayingIndex--;
+                reset();
+                mProgressFrame.setVisibility(VISIBLE);
+                prepare();
             }
             if (!isPlaying()) start();
         } else if (view.getId() == R.id.btnRetry) {
             if (mCallback != null)
                 mCallback.onRetry(this, mSource.get(nowPlayingIndex));
         } else if (view.getId() == R.id.btnNext) {
-            playNext();
+            if (nowPlayingIndex < mSource.size() - 1) {
+                nowPlayingIndex++;
+                reset();
+                mProgressFrame.setVisibility(VISIBLE);
+                prepare();
+            }
         }
-    }
-
-    private boolean playNext() {
-        if (nowPlayingIndex < mSource.size() - 1) {
-            nowPlayingIndex++;
-            reset();
-            mProgressFrame.setVisibility(VISIBLE);
-            prepare();
-            playBackStarted = false;
-            return true;
-        }
-        return false;
-    }
-
-    private boolean playPrevious() {
-        if (nowPlayingIndex != 0) {
-            nowPlayingIndex--;
-            reset();
-            mProgressFrame.setVisibility(VISIBLE);
-            prepare();
-            playBackStarted = false;
-            return true;
-        }
-        return false;
     }
 
     @Override
