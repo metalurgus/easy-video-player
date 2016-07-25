@@ -59,6 +59,10 @@ interface IUserMethods {
 
     void setNextDrawableRes(@DrawableRes int res);
 
+    void setScaleDrawable(@NonNull Drawable drawable);
+
+    void setScaleDrawableRes(@DrawableRes int res);
+
     void setPauseDrawable(@NonNull Drawable drawable);
 
     void setPauseDrawableRes(@DrawableRes int res);

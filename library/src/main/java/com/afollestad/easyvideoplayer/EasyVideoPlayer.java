@@ -26,6 +26,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -100,8 +101,10 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private TextView mBtnRetry;
     private ImageButton mBtnPlayPause;
     private ImageButton mBtnNext;
+    private ImageButton mBtnScale;
     private TextView mLabelCustom;
     private TextView mLabelBottom;
+    private TextView mLabelName;
 
     private MediaPlayer mPlayer;
     private boolean mSurfaceAvailable;
@@ -124,6 +127,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private CharSequence mSubmitText;
     private Drawable mRestartDrawable;
     private Drawable mNextDrawable;
+    private Drawable mScaleDrawable;
     private Drawable mPlayDrawable;
     private Drawable mPauseDrawable;
     private CharSequence mCustomLabelText;
@@ -187,6 +191,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 mPlayDrawable = a.getDrawable(R.styleable.EasyVideoPlayer_evp_playDrawable);
                 mNextDrawable = a.getDrawable(R.styleable.EasyVideoPlayer_evp_nextDrawable);
                 mPauseDrawable = a.getDrawable(R.styleable.EasyVideoPlayer_evp_pauseDrawable);
+                mScaleDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_settings_overscan_white_24dp);
 
                 mHideControlsOnPlay = a.getBoolean(R.styleable.EasyVideoPlayer_evp_hideControlsOnPlay, true);
                 mAutoPlay = a.getBoolean(R.styleable.EasyVideoPlayer_evp_autoPlay, false);
@@ -350,6 +355,17 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     }
 
     @Override
+    public void setScaleDrawableRes(@DrawableRes int res) {
+        setScaleDrawable(ContextCompat.getDrawable(getContext(), res));
+    }
+
+    @Override
+    public void setScaleDrawable(@NonNull Drawable drawable) {
+        mScaleDrawable = drawable;
+        if (!isPlaying()) mBtnScale.setImageDrawable(drawable);
+    }
+
+    @Override
     public void setNextDrawableRes(@DrawableRes int res) {
         setPlayDrawable(ContextCompat.getDrawable(getContext(), res));
     }
@@ -421,6 +437,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mSeeker.setEnabled(enabled);
         mBtnPlayPause.setEnabled(enabled);
         mBtnNext.setEnabled(enabled);
+        mBtnScale.setEnabled(enabled);
         mBtnRestart.setEnabled(enabled);
         mBtnRetry.setEnabled(enabled);
 
@@ -429,6 +446,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mBtnNext.setAlpha(enabled ? 1f : disabledAlpha);
         mBtnRestart.setAlpha(enabled ? 1f : disabledAlpha);
         mBtnNext.setAlpha(enabled ? 1f : disabledAlpha);
+        mBtnScale.setAlpha(enabled ? 1f : disabledAlpha);
 
         mClickFrame.setEnabled(enabled);
     }
@@ -640,7 +658,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
         LOG("Surface texture changed: %dx%d", width, height);
-        setScaleType(mScaleType == null ? ScaleType.CENTER_CROP : mScaleType);
+        setScaleType(mScaleType == null ? ScaleType.FIT_CENTER : mScaleType);
 //        adjustAspectRatio(width, height, mPlayer.getVideoWidth(), mPlayer.getVideoHeight());
     }
 
@@ -717,7 +735,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
         LOG("Video size changed: %dx%d", width, height);
-        setScaleType(mScaleType == null ? ScaleType.CENTER_CROP : mScaleType);
+        setScaleType(mScaleType == null ? ScaleType.FIT_CENTER : mScaleType);
 //        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, width, height);
     }
 
@@ -843,11 +861,17 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mBtnNext.setOnClickListener(this);
         mBtnNext.setImageDrawable(mNextDrawable);
 
+        mBtnScale = (ImageButton) mControlsFrame.findViewById(R.id.btnScale);
+        mBtnScale.setOnClickListener(this);
+        mBtnScale.setImageDrawable(mScaleDrawable);
+
         mLabelCustom = (TextView) mControlsFrame.findViewById(R.id.labelCustom);
         mLabelCustom.setText(mCustomLabelText);
 
         mLabelBottom = (TextView) mControlsFrame.findViewById(R.id.labelBottom);
         setBottomLabelText(mBottomLabelText);
+
+        mLabelName = (TextView) mControlsFrame.findViewById(R.id.labelName);
 
         setControlsEnabled(false);
         invalidateActions();
@@ -874,6 +898,27 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
                 mCallback.onRetry(this, mSource.get(nowPlayingIndex));
         } else if (view.getId() == R.id.btnNext) {
             playNext();
+        } else if (view.getId() == R.id.btnScale) {
+            switch (mScaleType) {
+                case FIT_CENTER:
+                    setScaleType(ScaleType.CENTER_CROP);
+                    break;
+                case CENTER_CROP:
+                    setScaleType(ScaleType.FIT_XY);
+                    break;
+                case FIT_XY:
+                    setScaleType(ScaleType.CENTER);
+                    break;
+                case CENTER:
+                    setScaleType(ScaleType.FIT_CENTER);
+                    break;
+            }
+        }
+    }
+
+    public void updateTitle(String title) {
+        if (mLabelName != null && !TextUtils.isEmpty(title)) {
+            mLabelName.setText(title);
         }
     }
 
@@ -929,6 +974,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mBtnPlayPause = null;
         mBtnRestart = null;
         mBtnNext = null;
+        mBtnScale = null;
 
         mControlsFrame = null;
         mClickFrame = null;
