@@ -135,6 +135,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private int mThemeColor = 0;
     private boolean mAutoFullscreen = false;
     private int nowPlayingIndex = 0;
+    private boolean playBackStarted = false;
 
     // Runnable used to run code on an interval to update counters and seeker
     private final Runnable mUpdateCounters = new Runnable() {
