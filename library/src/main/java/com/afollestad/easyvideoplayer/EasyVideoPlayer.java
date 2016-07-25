@@ -158,7 +158,6 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         }
     };
 
-
     private void init(Context context, AttributeSet attrs) {
         setBackgroundColor(Color.BLACK);
 
