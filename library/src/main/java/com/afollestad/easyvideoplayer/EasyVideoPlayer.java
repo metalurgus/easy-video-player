@@ -158,6 +158,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         }
     };
 
+
     private void init(Context context, AttributeSet attrs) {
         setBackgroundColor(Color.BLACK);
 
@@ -763,27 +764,31 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
         setKeepScreenOn(true);
 
-        mHandler = new Handler();
-        mPlayer = new MediaPlayer();
-        mPlayer.setOnPreparedListener(this);
-        mPlayer.setOnBufferingUpdateListener(this);
-        mPlayer.setOnCompletionListener(this);
-        mPlayer.setOnVideoSizeChangedListener(this);
-        mPlayer.setOnErrorListener(this);
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        if (!isInEditMode()) {
+            mHandler = new Handler();
+            mPlayer = new MediaPlayer();
+            mPlayer.setOnPreparedListener(this);
+            mPlayer.setOnBufferingUpdateListener(this);
+            mPlayer.setOnCompletionListener(this);
+            mPlayer.setOnVideoSizeChangedListener(this);
+            mPlayer.setOnErrorListener(this);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-        // Instantiate and add TextureView for rendering
-        final FrameLayout.LayoutParams textureLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
-        mTextureView = new TextureView(getContext());
-        addView(mTextureView, textureLp);
-        mTextureView.setSurfaceTextureListener(this);
+            // Instantiate and add TextureView for rendering
+            final FrameLayout.LayoutParams textureLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            mTextureView = new TextureView(getContext());
+            addView(mTextureView, textureLp);
+            mTextureView.setSurfaceTextureListener(this);
+        }
 
         final LayoutInflater li = LayoutInflater.from(getContext());
 
         // Inflate and add progress
-        mProgressFrame = li.inflate(R.layout.evp_include_progress, this, false);
-        addView(mProgressFrame);
+        if (!isInEditMode()) {
+            mProgressFrame = li.inflate(R.layout.evp_include_progress, this, false);
+            addView(mProgressFrame);
+        }
 
         // Instantiate and add click frame (used to toggle controls)
         mClickFrame = new FrameLayout(getContext());
