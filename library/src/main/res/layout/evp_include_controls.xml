@@ -141,7 +141,8 @@
         android:minHeight="@dimen/evp_button_size"
         android:textColor="#fff"
         android:textSize="@dimen/evp_text_size_medium"
-        tools:ignore="UnusedAttribute"/>
+        tools:ignore="UnusedAttribute"
+        android:layout_toLeftOf="@+id/btnScale" />
 
     <TextView
         android:id="@+id/labelCustom"

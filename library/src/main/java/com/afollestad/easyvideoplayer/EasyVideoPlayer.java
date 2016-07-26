@@ -1113,6 +1113,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         Matrix matrix = scaleManager.getScaleMatrix(mScaleType);
         if (matrix != null) {
             mTextureView.setTransform(matrix);
+            mTextureView.invalidate();
         }
     }
 
