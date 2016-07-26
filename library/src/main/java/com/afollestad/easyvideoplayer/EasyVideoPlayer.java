@@ -234,7 +234,6 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         this.nowPlayingIndex = index;
     }
 
-
     public int getPlayingIndex() {
         return nowPlayingIndex;
     }
