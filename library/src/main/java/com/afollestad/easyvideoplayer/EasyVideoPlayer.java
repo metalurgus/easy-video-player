@@ -257,7 +257,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             mSource = new ArrayList<>();
         }
         for (String s : source) {
-            mSource.add(Uri.parse(s));
+            if (!TextUtils.isEmpty(s)) {
+                mSource.add(Uri.parse(s));
+            }
         }
         if (mPlayer != null) prepare();
     }
@@ -903,6 +905,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         } else if (view.getId() == R.id.btnNext) {
             playNext();
         } else if (view.getId() == R.id.btnScale) {
+            if(mScaleType == null) {
+                mScaleType = ScaleType.FIT_CENTER;
+            }
             switch (mScaleType) {
                 case FIT_CENTER:
                     setScaleType(ScaleType.CENTER_CROP);
@@ -1059,7 +1064,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private void throwError(Exception e) {
         if (mCallback != null)
             mCallback.onError(this, e);
-        else throw new RuntimeException(e);
+//        else throw new RuntimeException(e);
     }
 
     private void invalidateThemeColors() {
