@@ -36,22 +36,27 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Aidan Follestad (afollestad)
  */
 public class EasyVideoPlayer extends FrameLayout implements IUserMethods, TextureView.SurfaceTextureListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener,
-        MediaPlayer.OnVideoSizeChangedListener, MediaPlayer.OnErrorListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+        MediaPlayer.OnVideoSizeChangedListener, MediaPlayer.OnErrorListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener {
+
 
     @IntDef({LEFT_ACTION_NONE, LEFT_ACTION_RESTART, LEFT_ACTION_RETRY})
     @Retention(RetentionPolicy.SOURCE)
@@ -105,6 +110,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private TextView mLabelCustom;
     private TextView mLabelBottom;
     private TextView mLabelName;
+    private Spinner mAudioTrackSpinner;
 
     private MediaPlayer mPlayer;
     private boolean mSurfaceAvailable;
@@ -140,6 +146,8 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     private boolean mAutoFullscreen = false;
     private int nowPlayingIndex = 0;
     private boolean playBackStarted = false;
+
+    private List<AudioTrackInfo> audioTracks = new ArrayList<>();
 
     // Runnable used to run code on an interval to update counters and seeker
     private final Runnable mUpdateCounters = new Runnable() {
@@ -568,6 +576,10 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         return mPlayer.getDuration();
     }
 
+    public MediaPlayer getmPlayer() {
+        return mPlayer;
+    }
+
     @Override
     public void start() {
         if (mPlayer == null) return;
@@ -696,6 +708,8 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         mSeeker.setMax(mediaPlayer.getDuration());
         setControlsEnabled(true);
 
+        prepareAudioTrackSelector(mediaPlayer);
+
         if (mAutoPlay) {
             if (!mControlsDisabled && mHideControlsOnPlay)
                 hideControls();
@@ -708,6 +722,31 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             // Hack to show first frame, is there another way?
             mPlayer.start();
             mPlayer.pause();
+        }
+
+    }
+
+    private void prepareAudioTrackSelector(MediaPlayer mediaPlayer) {
+        audioTracks.clear();
+        MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
+        for (int i = 0; i < trackInfos.length; i++) {
+            MediaPlayer.TrackInfo info = trackInfos[i];
+            if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                audioTracks.add(new AudioTrackInfo(info, i));
+            }
+        }
+        if(audioTracks.size() > 1) {
+            mAudioTrackSpinner.setVisibility(VISIBLE);
+            List<String> trackNames = new ArrayList<>();
+
+            for (int i = 0; i < audioTracks.size(); i++) {
+                AudioTrackInfo audioTrackInfo = audioTracks.get(i);
+                String item = String.format(getContext().getString(R.string.audio_track_format), i, audioTrackInfo.trackInfo.getLanguage());
+                trackNames.add(item);
+            }
+            mAudioTrackSpinner.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, android.R.id.text1, trackNames));
+        } else {
+            mAudioTrackSpinner.setVisibility(GONE);
         }
 
     }
@@ -840,6 +879,9 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         }
 
         // Retrieve controls
+        mAudioTrackSpinner = (Spinner) mControlsFrame.findViewById(R.id.audioTrack);
+        mAudioTrackSpinner.setOnItemSelectedListener(this);
+
         mSeeker = (SeekBar) mControlsFrame.findViewById(R.id.seeker);
         mSeeker.setOnSeekBarChangeListener(this);
 
@@ -969,6 +1011,26 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         if (mWasPlaying) mPlayer.start();
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, final int i, long l) {
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mPlayer.selectTrack(audioTracks.get(i).index);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 1000);
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
 
     @Override
@@ -1130,5 +1192,15 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         int videoWidth = mPlayer.getVideoWidth();
 
         scaleVideoSize(videoWidth, videoHeight);
+    }
+
+    private class AudioTrackInfo {
+        MediaPlayer.TrackInfo trackInfo;
+        int index;
+
+        public AudioTrackInfo(MediaPlayer.TrackInfo trackInfo, int index) {
+            this.trackInfo = trackInfo;
+            this.index = index;
+        }
     }
 }

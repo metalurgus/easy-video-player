@@ -3,5 +3,6 @@
 
     <string name="evp_submit">SUBMIT</string>
     <string name="evp_retry">RETRY</string>
+    <string name="audio_track_format" formatted="false">#%d. language: %s</string>
 
 </resources>

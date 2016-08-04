@@ -8,12 +8,18 @@
     android:paddingBottom="@dimen/evp_content_inset_half"
     android:paddingTop="@dimen/evp_content_inset">
 
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/audioTrack" />
+
     <SeekBar
         android:id="@+id/seeker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/evp_content_inset_less"
-        android:layout_marginRight="@dimen/evp_content_inset_less" />
+        android:layout_marginRight="@dimen/evp_content_inset_less"
+        android:layout_below="@+id/audioTrack" />
 
     <TextView
         android:id="@+id/position"
