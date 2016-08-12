@@ -443,6 +443,8 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
             mPlayer.prepareAsync();
         } catch (IOException e) {
             throwError(e);
+        } catch (IllegalStateException e) {
+            throwError(e);
         }
     }
 
@@ -947,7 +949,7 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
         } else if (view.getId() == R.id.btnNext) {
             playNext();
         } else if (view.getId() == R.id.btnScale) {
-            if(mScaleType == null) {
+            if (mScaleType == null) {
                 mScaleType = ScaleType.FIT_CENTER;
             }
             switch (mScaleType) {
