@@ -730,24 +730,29 @@ public class EasyVideoPlayer extends FrameLayout implements IUserMethods, Textur
 
     private void prepareAudioTrackSelector(MediaPlayer mediaPlayer) {
         audioTracks.clear();
-        MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
-        for (int i = 0; i < trackInfos.length; i++) {
-            MediaPlayer.TrackInfo info = trackInfos[i];
-            if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
-                audioTracks.add(new AudioTrackInfo(info, i));
+        try {
+            MediaPlayer.TrackInfo[] trackInfos = mediaPlayer.getTrackInfo();
+            for (int i = 0; i < trackInfos.length; i++) {
+                MediaPlayer.TrackInfo info = trackInfos[i];
+                if (info.getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                    audioTracks.add(new AudioTrackInfo(info, i));
+                }
             }
-        }
-        if(audioTracks.size() > 1) {
-            mAudioTrackSpinner.setVisibility(VISIBLE);
-            List<String> trackNames = new ArrayList<>();
+            if (audioTracks.size() > 1) {
+                mAudioTrackSpinner.setVisibility(VISIBLE);
+                List<String> trackNames = new ArrayList<>();
 
-            for (int i = 0; i < audioTracks.size(); i++) {
-                AudioTrackInfo audioTrackInfo = audioTracks.get(i);
-                String item = String.format(getContext().getString(R.string.audio_track_format), i, audioTrackInfo.trackInfo.getLanguage());
-                trackNames.add(item);
+                for (int i = 0; i < audioTracks.size(); i++) {
+                    AudioTrackInfo audioTrackInfo = audioTracks.get(i);
+                    String item = String.format(getContext().getString(R.string.audio_track_format), i, audioTrackInfo.trackInfo.getLanguage());
+                    trackNames.add(item);
+                }
+                mAudioTrackSpinner.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, android.R.id.text1, trackNames));
+            } else {
+                mAudioTrackSpinner.setVisibility(GONE);
             }
-            mAudioTrackSpinner.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, android.R.id.text1, trackNames));
-        } else {
+        } catch (Exception e) {
+            e.printStackTrace();
             mAudioTrackSpinner.setVisibility(GONE);
         }
 
